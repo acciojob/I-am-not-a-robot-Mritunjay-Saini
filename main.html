@@ -1,18 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>I'm not a robot</title>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <main>
-      <!-- solution start -->
-      
-      <!-- solution end -->
-    </main>
-    <script src="./script.js"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <title>I'm not a robot</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      width: 320px;
+      margin: 20px auto;
+      gap: 10px;
+    }
+    .tile {
+      width: 100px;
+      height: 100px;
+      cursor: pointer;
+      border: 2px solid #ccc;
+    }
+    .selected {
+      border-color: blue;
+    }
+    button {
+      margin: 10px;
+      padding: 8px 16px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h3 id="h">Please click on the identical tiles to verify that you are not a robot.</h3>
+
+  <div class="container" id="tiles"></div>
+
+  <button id="reset">Reset</button>
+  <button id="verify">Verify</button>
+
+  <p id="para"></p>
+
+  <script>
+    const allImages = [
+      'https://via.placeholder.com/100/FF0000', // red
+      'https://via.placeholder.com/100/00FF00', // green
+      'https://via.placeholder.com/100/0000FF', // blue
+      'https://via.placeholder.com/100/FFFF00', // yellow
+      'https://via.placeholder.com/100/FF00FF', // magenta
+    ];
+
+    let imageSet = [];
+    let selectedIndexes = [];
+    const tileContainer = document.getElementById('tiles');
+    const h = document.getElementById('h');
+    const resetBtn = document.getElementById('reset');
+    const verifyBtn = document.getElementById('verify');
+    const para = document.getElementById('para');
+
+    function shuffleArray(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+
+    function setupImages() {
+      selectedIndexes = [];
+      imageSet = [];
+      para.textContent = '';
+      verifyBtn.style.display = 'none';
+      resetBtn.style.display = 'none';
+
+      // pick 5 unique
+      const selected = shuffleArray(allImages).slice(0, 5);
+      // pick one of them to duplicate
+      const duplicate = selected[Math.floor(Math.random() * 5)];
+      selected.push(duplicate);
+      // shuffle all 6
+      imageSet = shuffleArray(selected);
+
+      // render
+      tileContainer.innerHTML = '';
+      imageSet.forEach((imgSrc, index) => {
+        const img = document.createElement('img');
+        img.src = imgSrc;
+        img.className = 'tile';
+        img.dataset.index = index;
+        img.onclick = handleTileClick;
+        tileContainer.appendChild(img);
+      });
+    }
+
+    function handleTileClick(e) {
+      const index = parseInt(e.target.dataset.index);
+      const img = e.target;
+
+      if (selectedIndexes.includes(index)) return; // prevent re-clicking same tile
+
+      if (selectedIndexes.length >= 2) return; // only allow 2 selections
+
+      img.classList.add('selected');
+      selectedIndexes.push(index);
+
+      resetBtn.style.display = 'inline-block';
+
+      if (selectedIndexes.length === 2) {
+        verifyBtn.style.display = 'inline-block';
+      }
+    }
+
+    function handleReset() {
+      setupImages();
+      h.textContent = "Please click on the identical tiles to verify that you are not a robot.";
+    }
+
+    function handleVerify() {
+      const [firstIdx, secondIdx] = selectedIndexes;
+      const img1 = imageSet[firstIdx];
+      const img2 = imageSet[secondIdx];
+
+      if (img1 === img2) {
+        para.textContent = "You are a human. Congratulations!";
+      } else {
+        para.textContent = "We can't verify you as a human. You selected the non-identical tiles.";
+      }
+
+      verifyBtn.style.display = 'none';
+    }
+
+    resetBtn.onclick = handleReset;
+    verifyBtn.onclick = handleVerify;
+
+    // Initialize on load
+    setupImages();
+  </script>
+</body>
 </html>
